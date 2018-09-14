@@ -3,7 +3,7 @@ create DATABASE social;
 create TABLE users (
 	id int NOT NULL AUTO_INCREMENT,
     email varchar(255) not null,
-    password varchar(500) not null,
+    password varchar(64) not null,
     PRIMARY KEY (id)
 );
 
@@ -22,6 +22,7 @@ create TABLE posts (
 	poster_id int,
 	post varchar(1000),
 	post_date date,
+	liked char(1),
 	PRIMARY KEY (post_id),
 	FOREIGN KEY (poster_id) references users(id)
 );
