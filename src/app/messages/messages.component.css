@@ -1,0 +1,42 @@
+.listBox {
+  background-color: lightgrey;
+  height: 93vh;
+  margin-top: 7vh;
+}
+.messageBox {
+  height: 93vh;
+  margin-top: 7vh;
+}
+.friend-item {
+  /*width: 34vw;*/
+  height: 12vh;
+  display: flex;
+  /*justify-content: center;*/
+  align-items: center;
+  border-bottom: 1px solid #d7dde5;
+  cursor: pointer;
+}
+.friend-item img {
+  margin: 0 2vw;
+  border-radius: 50%;
+}
+/*.inputField {*/
+  /*height: 5vh;*/
+/*}*/
+/*.messages {*/
+  /*height: 80vh;*/
+  /*overflow-y: auto;*/
+/*}*/
+/*.messageItem {*/
+  /*padding: 4px 14px;*/
+  /*border-radius: 21px;*/
+/*}*/
+
+/*.messageCase {*/
+  /*margin-bottom: 4px;*/
+/*}*/
+.formBox {
+  width: 67vw;
+  position: absolute;
+  bottom: 0;
+}

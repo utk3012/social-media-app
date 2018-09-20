@@ -4,11 +4,11 @@ import { GetInfoService } from '../services/get-info.service';
 import { RefreshTokenService } from '../services/refresh-token.service';
 
 @Component({
-  selector: 'app-friends',
-  templateUrl: './friends.component.html',
-  styleUrls: ['./friends.component.css']
+  selector: 'app-discover',
+  templateUrl: './discover.component.html',
+  styleUrls: ['./discover.component.css']
 })
-export class FriendsComponent implements OnInit {
+export class DiscoverComponent implements OnInit {
   users: any[];
   showMess = false;
   username: string;
@@ -19,7 +19,7 @@ export class FriendsComponent implements OnInit {
   ngOnInit() {
     const accessToken = localStorage.getItem('accessToken');
     this.username = localStorage.getItem('username');
-    this.getInfoService.getFriends({username: this.username}, accessToken)
+    this.getInfoService.getAllUsers({username: this.username}, accessToken)
       .subscribe((dat: {success: number, data: any}) => {
         if (dat.success === 1) {
           this.users = dat.data;

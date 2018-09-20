@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { NgForm } from '@angular/forms';
+
 import { GetInfoService } from '../services/get-info.service';
 import { RefreshTokenService } from '../services/refresh-token.service';
+import { UserInfo } from '../models/UserInfo-Model';
+import { Post } from '../models/Post.model';
 
 @Component({
   selector: 'app-home',
@@ -8,19 +12,22 @@ import { RefreshTokenService } from '../services/refresh-token.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  userInfo: {name: string, info: string, place: string, birthday: string, image: string, success: number}
-    = {name: '', info: '', place: '', birthday: '', image: '', success: 0};
+  userInfo: UserInfo
+    = {name: '', info: '', place: '', birthday: '', image: ''};
+  dataSuccess = 0;
+  posts: Post[];
 
   constructor(private getInfoService: GetInfoService, private refreshTokenService: RefreshTokenService) { }
 
   ngOnInit() {
-    this.userInfo.success = 0;
     const accessToken = localStorage.getItem('accessToken');
-    const userEmail = localStorage.getItem('userEmail');
-    this.getInfoService.getInfo({email: userEmail}, accessToken)
+    const username = localStorage.getItem('username');
+    this.getInfoService.getInfo({username: username}, accessToken)
       .subscribe((data: {name: string, info: string, place: string, birthday: string, image: string, success: number}) => {
         if (data.success === 1) {
+          delete data.success;
           this.userInfo = Object.assign({}, data);
+          this.dataSuccess = 1;
         }
       }, (error) => {
         if (error.status === 422 || error.error.msg === 'Token has expired') {
@@ -32,6 +39,49 @@ export class HomeComponent implements OnInit {
                 this.ngOnInit();
               }
           });
+        }
+      });
+
+    this.getInfoService.getFriendPosts({username: username}, accessToken)
+      .subscribe((data: any) => {
+        if (data.success === 1) {
+          this.posts = data.data;
+        }
+      }, (error) => {
+        if (error.status === 422 || error.error.msg === 'Token has expired') {
+          const refreshToken = localStorage.getItem('refreshToken');
+          this.refreshTokenService.getAccessToken(refreshToken)
+            .subscribe((data: {accessToken: string}) => {
+              if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+                this.ngOnInit();
+              }
+            });
+        }
+      });
+
+  }
+
+  makePost(form: NgForm) {
+    const accessToken = localStorage.getItem('accessToken');
+    const username = localStorage.getItem('username');
+    const now = new Date().toISOString().split('.')[0];
+    const publ = form.value.public ? 1 : 0;
+    this.getInfoService.savePost({username: username, post: form.value.post, post_date: now, liked: 0, public: publ}, accessToken)
+      .subscribe((data: {msg: string, success: number}) => {
+        if (data.success === 1) {
+          console.log(data.msg);
+        }
+      }, (error) => {
+        if (error.status === 422 || error.error.msg === 'Token has expired') {
+          const refreshToken = localStorage.getItem('refreshToken');
+          this.refreshTokenService.getAccessToken(refreshToken)
+            .subscribe((data: {accessToken: string}) => {
+              if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+                this.ngOnInit();
+              }
+            });
         }
       });
   }

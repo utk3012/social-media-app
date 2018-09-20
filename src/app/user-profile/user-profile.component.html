@@ -1,0 +1,69 @@
+<app-navbar></app-navbar>
+<div *ngIf="dataSuccess === 1">
+  <!-- Page Container -->
+  <div class="w3-container w3-content" style="max-width:1400px;margin-top:80px">
+    <!-- The Grid -->
+    <div class="w3-row">
+
+      <!-- Left Column -->
+      <div class="w3-col m1" style="color: white;">
+        s
+      </div>
+
+      <div class="w3-col m3">
+        <!-- Profile -->
+        <div class="w3-card w3-round w3-white">
+          <div class="w3-container">
+            <h4 class="w3-center">{{ userInfo.name }}</h4>
+            <p class="w3-center"><img [src]="userInfo.image" class="w3-circle" style="height:106px;width:106px" alt="Avatar"></p>
+            <hr>
+            <p><i class="fa fa-pencil fa-fw w3-margin-right w3-text-theme"></i> {{ userInfo.info }}</p>
+            <p><i class="fa fa-home fa-fw w3-margin-right w3-text-theme"></i> {{ userInfo.place }}</p>
+            <p><i class="fa fa-birthday-cake fa-fw w3-margin-right w3-text-theme"></i> {{ userInfo.birthday }}</p>
+          </div>
+        </div>
+        <br>
+
+        <!-- Interests -->
+        <div class="w3-card w3-round w3-white w3-hide-small">
+          <div class="w3-container">
+            <p>Interests</p>
+            <p>
+              <span class="w3-tag w3-small w3-theme-d5">News</span>
+              <span class="w3-tag w3-small w3-theme-d4">W3Schools</span>
+              <span class="w3-tag w3-small w3-theme-d3">Labels</span>
+              <span class="w3-tag w3-small w3-theme-d2">Games</span>
+              <span class="w3-tag w3-small w3-theme-d1">Friends</span>
+              <span class="w3-tag w3-small w3-theme">Games</span>
+              <span class="w3-tag w3-small w3-theme-l1">Friends</span>
+              <span class="w3-tag w3-small w3-theme-l2">Food</span>
+              <span class="w3-tag w3-small w3-theme-l3">Design</span>
+              <span class="w3-tag w3-small w3-theme-l4">Art</span>
+              <span class="w3-tag w3-small w3-theme-l5">Photos</span>
+            </p>
+          </div>
+        </div>
+        <br>
+        <!-- End Left Column -->
+      </div>
+
+      <!-- Middle Column -->
+      <div class="w3-center" *ngIf="!posts"><br>
+        <h3>No Posts to display :(</h3>
+      </div>
+      <div class="w3-col m7" *ngIf="posts">
+        <h2 class="w3-center">Profile</h2>
+        <app-posts [posts]="posts"></app-posts>
+        <!--End Middle Column  -->
+      </div>
+    </div>
+
+    <!-- End Page Container -->
+  </div>
+  <br>
+
+  <!-- Footer -->
+  <footer class="w3-container w3-theme-d3 w3-padding-16">
+    <h5>Copyright 2018</h5>
+  </footer>
+</div>

@@ -18,7 +18,7 @@ export class RegisterComponent implements OnInit {
 
   onSubmit(form: NgForm) {
     const val = form.value;
-    if (val.email.length < 5 || val.name.length < 3 || val.place.length < 3
+    if (val.email.length < 5 || val.name.length < 3 || val.place.length < 3 || val.username.length < 5
       || val.birthday.length < 5 || val.password.length < 5 || val.info.length < 5) {
       this.showError = true;
       return;
@@ -28,9 +28,9 @@ export class RegisterComponent implements OnInit {
         if (data.success === 1) {
           localStorage.setItem('accessToken', data.accessToken);
           localStorage.setItem('refreshToken', data.refreshToken);
-          localStorage.setItem('userEmail', val.email);
+          localStorage.setItem('username', val.username);
           form.reset();
-          this.router.navigate(['/home']);
+          this.router.navigate(['/home', val.username]);
         } else {
           form.reset();
           this.showError = true;

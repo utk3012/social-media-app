@@ -15,6 +15,9 @@ import { FriendsComponent } from './friends/friends.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { RequestsComponent } from './requests/requests.component';
 import { MessagesComponent } from './messages/messages.component';
+import { NotFoundComponent } from './not-found/not-found.component';
+import { DiscoverComponent } from './discover/discover.component';
+import { UserProfileComponent } from './user-profile/user-profile.component';
 
 const appRoutes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full'},
@@ -25,6 +28,8 @@ const appRoutes: Routes = [
   {path: 'friends', component: FriendsComponent},
   {path: 'messages', component: MessagesComponent},
   {path: 'friend-requests', component: RequestsComponent},
+  {path: 'discover', component: DiscoverComponent},
+  {path: ':username', component: UserProfileComponent},
   {path: '**', redirectTo: 'home'}
 ];
 
@@ -40,7 +45,10 @@ const appRoutes: Routes = [
     FriendsComponent,
     NotificationsComponent,
     RequestsComponent,
-    MessagesComponent
+    MessagesComponent,
+    NotFoundComponent,
+    DiscoverComponent,
+    UserProfileComponent
   ],
   imports: [
     BrowserModule,

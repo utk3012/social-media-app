@@ -9,8 +9,33 @@ export class GetInfoService {
 
   constructor(private http: HttpClient) { }
 
-  public getInfo(data: {email: string}, accessToken: string) {
+  public getInfo(data: {username: string}, accessToken: string) {
     let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', 'Bearer ' + accessToken);
     return this.http.post(this.baseUrl + 'getinfo', data, {headers: headers});
+  }
+
+  public getAllUsers(data: {username: string}, accessToken: string) {
+    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', 'Bearer ' + accessToken);
+    return this.http.post(this.baseUrl + 'discover',data, {headers: headers});
+  }
+
+  public getFriends(data: {username: string}, accessToken: string) {
+    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', 'Bearer ' + accessToken);
+    return this.http.post(this.baseUrl + 'friends',data, {headers: headers});
+  }
+
+  public getPosts(data: {fromUsername: string, forUsername: string}, accessToken: string) {
+    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', 'Bearer ' + accessToken);
+    return this.http.post(this.baseUrl + 'get_posts',data, {headers: headers});
+  }
+
+  public savePost(data: any, accessToken: string) {
+    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', 'Bearer ' + accessToken);
+    return this.http.post(this.baseUrl + 'make_post',data, {headers: headers});
+  }
+
+  public getFriendPosts(data: {username: string}, accessToken: string) {
+    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', 'Bearer ' + accessToken);
+    return this.http.post(this.baseUrl + 'get_friend_posts',data, {headers: headers});
   }
 }

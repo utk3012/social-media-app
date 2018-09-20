@@ -23,11 +23,11 @@ export class LoginComponent implements OnInit {
       return;
     }
     this.registerService.onLogin(form.value)
-      .subscribe((data: {accessToken: string, refreshToken: string, success: number, msg: string}) => {
+      .subscribe((data: {accessToken: string, refreshToken: string, success: number, msg: string, username: string}) => {
         if (data.success === 1) {
           localStorage.setItem('accessToken', data.accessToken);
           localStorage.setItem('refreshToken', data.refreshToken);
-          localStorage.setItem('userEmail', val.email);
+          localStorage.setItem('username', data.username);
           form.reset();
           this.router.navigate(['/home']);
         } else {

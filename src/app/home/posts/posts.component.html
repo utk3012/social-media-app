@@ -1,4 +1,5 @@
-<!--<div class="w3-center"><br>-->
-  <!--<h3>No Posts to display :(</h3>-->
-<!--</div>-->
-<app-post></app-post>
+<div *ngIf="posts.length !==0">
+  <div *ngFor="let post of posts">
+    <app-post [post]="post"></app-post>
+  </div>
+</div>
