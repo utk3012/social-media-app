@@ -5,5 +5,6 @@
   <hr class="w3-clear">
   <p>{{ post.post }}</p>
   <button type="button" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-thumbs-up"></i> &nbsp;Like</button>
+  <span class="w3-right" *ngIf="post.public == 1"><i class="fa fa-globe"></i></span>
   <!--<button type="button" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-comment"></i> &nbsp;Comment</button>-->
 </div>

@@ -31,9 +31,21 @@ create TABLE posts (
 
 create TABLE friends (
 	friend_id int NOT NULL AUTO_INCREMENT,
-	user1 int NOT NULL,
-	user2 int NOT NULL,
+	user1 int NOT NULL,   --requester
+	user2 int NOT NULL,	  -- accepter
+	time_stamp datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (friend_id),
+	FOREIGN KEY (user1) references users(id),
+	FOREIGN KEy (user2) references users(id)
+);
+
+create TABLE requests (
+	req_id int NOT NULL AUTO_INCREMENT,
+	user1 int NOT NULL,   -- from
+	user2 int NOT NULL,	  -- for
+	time_stamp datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	accepted char(1),
+	PRIMARY KEY (req_id),
 	FOREIGN KEY (user1) references users(id),
 	FOREIGN KEy (user2) references users(id)
 );

@@ -46,6 +46,11 @@ export class HomeComponent implements OnInit {
       .subscribe((data: any) => {
         if (data.success === 1) {
           this.posts = data.data;
+          this.posts.sort(function compare(a, b) {
+            let dateA = new Date(a.post_date);
+            let dateB = new Date(b.post_date);
+            return dateB - dateA;
+          });
         }
       }, (error) => {
         if (error.status === 422 || error.error.msg === 'Token has expired') {
@@ -70,7 +75,7 @@ export class HomeComponent implements OnInit {
     this.getInfoService.savePost({username: username, post: form.value.post, post_date: now, liked: 0, public: publ}, accessToken)
       .subscribe((data: {msg: string, success: number}) => {
         if (data.success === 1) {
-          console.log(data.msg);
+          form.reset();
         }
       }, (error) => {
         if (error.status === 422 || error.error.msg === 'Token has expired') {

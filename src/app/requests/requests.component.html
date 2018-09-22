@@ -1,1 +1,26 @@
 <app-navbar></app-navbar>
+<div class="w3-container w3-content" style="max-width:1400px;margin-top:80px" *ngIf="showMess">
+  <!-- The Grid -->
+  <div class="w3-row">
+    <!-- Left Column -->
+    <div class="w3-col m2" style="color: white;">
+      s
+    </div>
+    <div class="w3-col m8">
+      <h3>Friend Requests</h3>
+      <ul class="w3-ul w3-card-4">
+        <li class="w3-bar" (click)="viewUser(user.username)" *ngFor="let user of users">
+          <span class="w3-bar-item w3-button w3-xlarge w3-right" (click)="acceptRequest(user.username)">
+            <i class="fa fa-check" aria-hidden="true"></i>
+          </span>
+          <img [src]="user.image" class="w3-bar-item w3-circle" style="width:85px">
+          <div class="w3-bar-item">
+            <span class="w3-large">{{ user.name }}</span><br>
+            <span>{{ user.info }}</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
