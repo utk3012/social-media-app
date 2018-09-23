@@ -53,4 +53,9 @@ export class GetInfoService {
     let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', 'Bearer ' + accessToken);
     return this.http.post(this.baseUrl + 'get_requests', data, {headers: headers});
   }
+
+  public getMessages(data: {username: string, dts: string}, accessToken: string) {
+    let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', 'Bearer ' + accessToken);
+    return this.http.post(this.baseUrl + 'get_messages', data, {headers: headers});
+  }
 }

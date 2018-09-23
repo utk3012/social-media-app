@@ -47,5 +47,17 @@ create TABLE requests (
 	accepted char(1),
 	PRIMARY KEY (req_id),
 	FOREIGN KEY (user1) references users(id),
-	FOREIGN KEy (user2) references users(id)
+	FOREIGN KEY (user2) references users(id)
+);
+
+CREATE TABLE messages (
+	mess_id int NOT NULL AUTO_INCREMENT,
+	s_id int NOT NULL,
+	r_id int NOT NULL,
+	dts datetime NOT NULL,
+	seen char(1),
+	msg varchar(500),
+	PRIMARY KEY (mess_id),
+	FOREIGN KEY (s_id) references users(id),
+	FOREIGN KEY (r_id) references users(id)	
 );

@@ -152,7 +152,7 @@ def friends():
 		return (jsonify({"msg": "No friends", "success": 0}), 200)
 	res = []
 	for result in rv:
-		query = 'SELECT name, info, image, username from info natural join users where id = "%s"' % (result)
+		query = 'SELECT name, info, image, username, id from info natural join users where id = "%s"' % (result)
 		cur.execute(query)
 		rv1 = cur.fetchall()
 		row_headers=[x[0] for x in cur.description] #this will extract row headers
@@ -282,7 +282,29 @@ def acceptRequest():
 	query = "INSERT into friends (user1, user2) values ('%s', '%s')" % (getUserId(request.json['forUsername']), getUserId(request.json['fromUsername']))
 	cur.execute(query)
 	mysql.connection.commit()
-	return jsonify({"success": 1, "msg": "Request accepted"}), 200	
+	return jsonify({"success": 1, "msg": "Request accepted"}), 200
+
+@app.route('/api/get_messages', methods=['POST'])
+@jwt_required
+def getMessages():
+	if not request.json or not 'username' in request.json:
+		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
+	if not request.json['username'] == get_jwt_identity():
+		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	cur = mysql.connection.cursor()
+	myid = getUserId(request.json['username'])
+	query = 'SELECT s_id, r_id, msg, dts, seen from messages where (s_id="%s" or r_id="%s") and dts>"%s"' \
+	% (myid, myid, request.json['dts'])
+	cur.execute(query)
+	row_headers=[x[0] for x in cur.description] #this will extract row headers
+	rv = cur.fetchall()
+	if not rv:
+		return jsonify({"success": 0, "data": []}), 200		
+	res = []
+	for result in rv:
+		res.append(dict(zip(row_headers,result)))
+	mysql.connection.commit()
+	return jsonify({"success": 1, "data": res, "myid": myid}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

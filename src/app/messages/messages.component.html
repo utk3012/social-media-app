@@ -1,11 +1,12 @@
 <app-navbar></app-navbar>
+<div class="container">
 <div class="w3-col m4 listBox">
-  <div class="friend-item w3-row">
+  <div class="friend-item w3-row" *ngFor="let user of users" (click)="selectFriend(user.id)">
     <div class="w3-col m3">
-      <img src="https://semantic-ui.com/images/avatar/small/daniel.jpg" alt="user-img">
+      <img [src]="user.image" alt="user-img" width="50" height="50">
     </div>
     <div class="w3-col m12">
-      <strong>utkarsh</strong>
+      <strong>{{ user.name }}</strong>
       <div class="w3-right" style="padding-right: 1vw">14:00</div>
       <br>
       this is a message
@@ -15,24 +16,40 @@
     </div>
   </div>
 </div>
-<div class="w3-col m8 messageBox">
-  <div class="row inputField">
-    <div class="col-xs-12">
-      <form>
-        <!--<section class="form-block">-->
-          <div class="w3-row formBox">
-            <div class="w3-col m11">
-              <input class="w3-input w3-border" type="text" id="mess" name="message" ngModel placeholder="Type your message here!" size="45">
-            </div>
-            <div class="w3-col m1">
-              <button type="submit" class="btn btn-icon btn-primary">
-                sen
-              </button>
-            </div>
+<div class="w3-col m8 messageBox" #scrollMe>
+  <div class="w3-row">
+    <div class="w3-col m12">
+      <div *ngIf="selectedFriend !== -1">
+        <div class="messageScroll">
+          <div class="messageCase" *ngFor="let m of messages | message: selectedFriend">
+              <span class="messageItem"
+                    [ngClass] = "{'w3-right': +m.s_id === myId}"
+                    [ngStyle] = "{'background-color': (+m.s_id !== myId) ? '#ededed' : '#8f959e'}">
+                {{ m.msg }}
+              </span>
+            <br>
           </div>
-        <!--</section>-->
-      </form>
+        </div>
+        <div style="height: 50px"></div>
+        <form (ngSubmit)="onSend(f)" #f="ngForm">
+            <div class="w3-row formBox">
+              <div class="w3-col m11">
+                <input class="w3-input w3-border" type="text" id="mess" name="message" ngModel placeholder="Type your message here!" autocomplete="off" size="45">
+              </div>
+              <div class="w3-col m1">
+                <button type="submit" class="w3-button w3-block w3-green">
+                  Send
+                </button>
+              </div>
+            </div>
+        </form>
+      </div>
+      <div *ngIf="selectedFriend === -1">
+        <div class="w3-center">
+          <h3>Select a chat</h3>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-
+</div>

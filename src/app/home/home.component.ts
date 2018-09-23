@@ -12,8 +12,7 @@ import { Post } from '../models/Post.model';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  userInfo: UserInfo
-    = {name: '', info: '', place: '', birthday: '', image: ''};
+  userInfo: UserInfo = {name: '', info: '', place: '', birthday: '', image: ''};
   dataSuccess = 0;
   posts: Post[];
 
@@ -47,9 +46,7 @@ export class HomeComponent implements OnInit {
         if (data.success === 1) {
           this.posts = data.data;
           this.posts.sort(function compare(a, b) {
-            let dateA = new Date(a.post_date);
-            let dateB = new Date(b.post_date);
-            return dateB - dateA;
+            return this.getTime(a.post_date) - this.getTime(b.post_date);
           });
         }
       }, (error) => {
@@ -65,6 +62,10 @@ export class HomeComponent implements OnInit {
         }
       });
 
+  }
+
+  private static getTime(date?: Date) {
+    return date != null ? date.getTime() : 0;
   }
 
   makePost(form: NgForm) {

@@ -18,6 +18,7 @@ import { MessagesComponent } from './messages/messages.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { DiscoverComponent } from './discover/discover.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
+import { MessagePipe } from './pipes/message.pipe';
 
 const appRoutes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full'},
@@ -48,7 +49,8 @@ const appRoutes: Routes = [
     MessagesComponent,
     NotFoundComponent,
     DiscoverComponent,
-    UserProfileComponent
+    UserProfileComponent,
+    MessagePipe
   ],
   imports: [
     BrowserModule,
