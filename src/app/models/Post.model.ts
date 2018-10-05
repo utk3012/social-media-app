@@ -3,7 +3,7 @@ export interface Post {
   poster_id: number,
   post: string,
   post_date: string,
-  liked: number,
+  liked: number[],
   public: number,
   name: string,
   image: string

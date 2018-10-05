@@ -5,6 +5,10 @@ import {GetInfoService} from '../services/get-info.service';
 import {RefreshTokenService} from '../services/refresh-token.service';
 import {NgForm} from '@angular/forms';
 
+interface Dictionary {
+  [index: string]: {msg: string, dts: string, seen: string};
+}
+
 @Component({
   selector: 'app-messages',
   templateUrl: './messages.component.html',
@@ -19,6 +23,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   myId: number;
   socket = io('http://localhost:4000');
   messages: {msg: string, s_id: string, r_id: string, seen?: string, dts: string}[] = [];
+  lastMessages = {} as Dictionary;
 
   constructor(private getInfoService: GetInfoService, private refreshTokenService: RefreshTokenService) { }
 
@@ -33,6 +38,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
             .subscribe((res: any) => {
                 this.messages = res.data;
                 this.myId = res.myid;
+                this.getLastMessages();
                 this.socket.emit('join', this.myId);
                 this.socket.on('chat message', function(msg: any) {
                   this.messages.push({msg: msg.msg, s_id: msg.s_id + '', r_id: msg.r_id + '', seen: msg.seen, dts: msg.dts});
@@ -68,6 +74,19 @@ export class MessagesComponent implements OnInit, OnDestroy {
             });
         }
       });
+  }
+
+  getLastMessages() {
+    for (let f of this.users) {
+      for (let m of this.messages) {
+        if (m.s_id === f.id) {
+          const tim = (new Date(m.dts).getHours()) + ':' + (new Date(m.dts).getMinutes());
+          // this.lastMessages.push({msg: m.msg, id: f.id, dts: tim});
+          this.lastMessages[m.s_id] = {msg: m.msg, dts: tim, seen: m.seen};
+          break;
+        }
+      }
+    }
   }
 
   selectFriend(userId: number) {

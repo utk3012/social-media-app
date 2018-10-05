@@ -3,7 +3,6 @@ from flask import Flask, jsonify, abort, request
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
 from flask_mysqldb import MySQL
-import requests
 import bcrypt
 import json
 import datetime
@@ -31,7 +30,10 @@ def getUserId(username):
 	cur.execute(query)
 	rv = cur.fetchone()
 	mysql.connection.commit()
-	return rv[0]
+	if rv:
+		return rv[0]
+	else:
+		return -1
 
 def check_friends(user1, user2):
 	cur = mysql.connection.cursor()
@@ -107,13 +109,12 @@ def getInfo():
 	if not request.json or not 'username' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
 	cur = mysql.connection.cursor()
-	getUserId(request.json['username'])
 	query = 'SELECT name, info, place, birthday, image from info natural join users where username="%s"' % (request.json['username'])
 	cur.execute(query)
 	rv = cur.fetchall()
 	mysql.connection.commit()
 	if not rv:
-		return (jsonify({"msg": "User not registered", "success": 0}), 200)
+		return (jsonify({"msg": "User not registered", "success": 0, "name": 'not-found'}), 200)
 	return jsonify({"name": rv[0][0], "info": rv[0][1], "place": rv[0][2], "birthday": rv[0][3], "image": rv[0][4], "success": 1}), 200
 
 @app.route('/api/discover', methods=['POST'])
@@ -164,13 +165,13 @@ def friends():
 @jwt_required
 def makePost():
 	if not request.json or not 'username' in request.json or not 'post' in request.json or not 'post_date' in request.json \
-	or not 'liked' in request.json or not 'public':
+	or not 'public' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
 	if not request.json['username'] == get_jwt_identity():
 		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
 	cur = mysql.connection.cursor()
-	query = 'INSERT into posts(poster_id, post, post_date, liked, public) SELECT id, "%s", "%s", "%s", "%s" from users where username = "%s"' \
-	% (request.json['post'], request.json['post_date'], request.json['liked'], request.json['public'], request.json['username'])
+	query = 'INSERT into posts(poster_id, post, post_date, public) SELECT id, "%s", "%s", "%s" from users where username = "%s"' \
+	% (request.json['post'], request.json['post_date'], request.json['public'], request.json['username'])
 	cur.execute(query)
 	mysql.connection.commit()
 	return jsonify({"success": 1, "msg": "posted"}), 200
@@ -182,8 +183,9 @@ def getPosts():
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
 	if not request.json['fromUsername'] == get_jwt_identity():
 		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	myid = getUserId(request.json['fromUsername'])
 	cur = mysql.connection.cursor()
-	query = """SELECT post_id, poster_id, name, post_date, liked, public, post, image from posts, info 
+	query = """SELECT post_id, poster_id, name, post_date, public, post, image from posts, info 
 	where poster_id = (SELECT id from users where username = '%s') and id=poster_id ORDER BY post_date DESC""" % (request.json['forUsername'])
 	fr = False
 	status = approach(request.json['fromUsername'], request.json['forUsername'])
@@ -192,7 +194,7 @@ def getPosts():
 	else:
 		fr = check_friends(request.json['forUsername'], request.json['fromUsername'])
 		if not fr:
-			query = """SELECT post_id, poster_id, name, post_date, liked, public, post, image from posts, info 
+			query = """SELECT post_id, poster_id, name, post_date, public, post, image from posts, info 
 			where poster_id = (SELECT id from users where username = '%s') and id=poster_id and public = 1 ORDER BY post_date DESC""" % (request.json['forUsername'])
 	cur.execute(query)
 	rv = cur.fetchall()
@@ -200,10 +202,19 @@ def getPosts():
 		return jsonify({"success": 1, "data": [], "friends": fr, "status": status}), 200
 	res = []
 	row_headers = [x[0] for x in cur.description] #this will extract row headers
+	row_headers.append('liked')
 	for i in rv:
+		query = """SELECT user_id from liked where post_id = '%s'""" % (i[0])
+		cur.execute(query)
+		rv1 = cur.fetchall()
+		likes = tuple()
+		if rv1:
+			for j in rv1:
+				likes = likes + j
+		i = i + (likes, )
 		res.append(dict(zip(row_headers, i)))
 	mysql.connection.commit()
-	return jsonify({"success": 1, "data": res, "friends": fr, "status": status}), 200
+	return jsonify({"success": 1, "data": res, "friends": fr, "status": status, "myid": myid}), 200
 
 @app.route('/api/get_friend_posts', methods=['POST'])
 @jwt_required
@@ -212,6 +223,7 @@ def getFriendPosts():
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
 	if not request.json['username'] == get_jwt_identity():
 		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	myid = getUserId(request.json['username'])
 	cur = mysql.connection.cursor()
 	query = """SELECT user2 as fr from friends T, users R where R.username = "%s" and T.user1 = R.id union 
 	select user1 as fr from friends T, users R where R.username = "%s" and T.user2=R.id""" % (request.json['username'], request.json['username'])
@@ -221,15 +233,24 @@ def getFriendPosts():
 		return jsonify({"msg":"No posts", "success": 0}), 200
 	res = []
 	for result in rv:
-		query = """SELECT post_id, poster_id, name, post_date, liked, public, post, image from posts, info 
+		query = """SELECT post_id, poster_id, name, post_date, public, post, image from posts, info 
 		where poster_id = '%s' and id=poster_id  ORDER BY post_date DESC""" % (result)
 		cur.execute(query)
 		rv1 = cur.fetchall()
 		row_headers=[x[0] for x in cur.description] #this will extract row headers
+		row_headers.append('liked')
 		for i in rv1:
+			query = """SELECT user_id from liked where post_id = '%s'""" % (i[0])
+			cur.execute(query)
+			rv2 = cur.fetchall()
+			likes = tuple()
+			if rv2:
+				for j in rv2:
+					likes = likes + j
+			i = i + (likes, )
 			res.append(dict(zip(row_headers, i)))
 	mysql.connection.commit()
-	return jsonify({"success": 1, "data": res}), 200
+	return jsonify({"success": 1, "data": res, "myid": myid}), 200
 
 @app.route('/api/send_request', methods=['POST'])
 @jwt_required
@@ -255,7 +276,8 @@ def getRequests():
 	if not request.json['username'] == get_jwt_identity():
 		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
 	cur = mysql.connection.cursor()
-	query = "SELECT S.name, S.info, S.image, T.username from requests R, info S, users T where R.user2 = '%s' and S.id = R.user1 and T.id = S.id" % (getUserId(request.json['username']))
+	query = "SELECT S.name, S.info, S.image, T.username from requests R, info S, users T where R.user2 = '%s' and S.id = R.user1 and T.id = S.id and accepted = 0" \
+	% (getUserId(request.json['username']))
 	cur.execute(query)
 	row_headers=[x[0] for x in cur.description] #this will extract row headers
 	rv = cur.fetchall()
@@ -305,6 +327,21 @@ def getMessages():
 		res.append(dict(zip(row_headers,result)))
 	mysql.connection.commit()
 	return jsonify({"success": 1, "data": res, "myid": myid}), 200
+
+@app.route('/api/like_post', methods=['POST'])
+@jwt_required
+def likePost():
+	if not request.json or not 'post_id' in request.json or not 'username':
+		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
+	if not request.json['username'] == get_jwt_identity():
+		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	myid = getUserId(request.json['username'])
+	cur = mysql.connection.cursor()
+	query = """CALL likePost('%s', '%s')""" % (request.json['post_id'], myid)
+	cur.execute(query)
+	mysql.connection.commit()
+	return jsonify({"success": 1}), 200	
+
 
 if __name__ == '__main__':
     app.run(debug=True)

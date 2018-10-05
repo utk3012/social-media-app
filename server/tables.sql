@@ -23,7 +23,6 @@ create TABLE posts (
 	poster_id int,
 	post varchar(1000),
 	post_date datetime,
-	liked char(1),
 	public char(1),
 	PRIMARY KEY (post_id),
 	FOREIGN KEY (poster_id) references users(id)
@@ -61,3 +60,35 @@ CREATE TABLE messages (
 	FOREIGN KEY (s_id) references users(id),
 	FOREIGN KEY (r_id) references users(id)	
 );
+
+create TABLE liked (
+	post_id int,
+	user_id int,
+	time_stamp datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (post_id, user_id),
+	FOREIGN KEY (post_id) references posts(post_id),
+	FOREIGN KEY (user_id) references users(id)		
+);
+
+DELIMITER $$
+CREATE PROCEDURE likePost (IN postId int, IN userId int)
+	BEGIN
+		IF (SELECT exists (SELECT 1 FROM liked where post_id = postId and user_id = userId)) THEN
+			DELETE FROM liked where post_id = postId and userId = userId;
+		ELSE
+			INSERT into liked(post_id, user_id) values (postId, userId);
+		END IF;
+	END$$
+
+DELIMITER $$
+CREATE TRIGGER requestAccepted
+AFTER INSERT ON friends
+FOR EACH ROW
+BEGIN
+IF INSERTING THEN
+	UPDATE requests SET accepted = 1 WHERE requests.user1 = NEW.user1 and requests.user2 = NEW.user2;
+END IF;
+END$$
+
+
+

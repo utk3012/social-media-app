@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { GetInfoService } from '../services/get-info.service';
 import { RefreshTokenService } from '../services/refresh-token.service';
 import { UserInfo } from '../models/UserInfo-Model';
@@ -18,9 +18,10 @@ export class UserProfileComponent implements OnInit {
   foreignProfile = false;
   friendProfile = false;
   relationStatus = -1;
+  myId: number;
 
   constructor(private activatedRoute: ActivatedRoute, private getInfoService: GetInfoService,
-              private refreshTokenService: RefreshTokenService) { }
+              private refreshTokenService: RefreshTokenService, private router: Router) { }
 
   ngOnInit() {
     const fromUsername = localStorage.getItem('username');
@@ -35,6 +36,9 @@ export class UserProfileComponent implements OnInit {
               delete data.success;
               this.userInfo = Object.assign({}, data);
               this.dataSuccess = 1;
+            }
+            else if (data.success === 0 && data.name === 'not-found') {
+              this.router.navigate(['/not-found']);
             }
           }, (error) => {
             if (error.status === 422 || error.error.msg === 'Token has expired') {
@@ -54,6 +58,7 @@ export class UserProfileComponent implements OnInit {
             if(data.success) {
               this.friendProfile = data.friends;
               this.posts = data.data;
+              this.myId = data.myid;
               this.relationStatus = data.status;
             }
           }, (error) => {
@@ -78,6 +83,28 @@ export class UserProfileComponent implements OnInit {
       .subscribe((data: any) => {
         if(data.success) {
           this.relationStatus = 1;
+        }
+      }, (error) => {
+        if (error.status === 422 || error.error.msg === 'Token has expired') {
+          const refreshToken = localStorage.getItem('refreshToken');
+          this.refreshTokenService.getAccessToken(refreshToken)
+            .subscribe((data: { accessToken: string }) => {
+              if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+                this.ngOnInit();
+              }
+            });
+        }
+      });
+  }
+
+  acceptRequest() {
+    const fromUsername = localStorage.getItem('username');
+    const accessToken = localStorage.getItem('accessToken');
+    this.getInfoService.acceptRequest({forUsername: this.forUsername, fromUsername: fromUsername}, accessToken)
+      .subscribe((data: any) => {
+        if(data.success) {
+          this.friendProfile = true;
         }
       }, (error) => {
         if (error.status === 422 || error.error.msg === 'Token has expired') {

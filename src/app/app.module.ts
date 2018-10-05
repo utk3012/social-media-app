@@ -29,6 +29,7 @@ const appRoutes: Routes = [
   {path: 'friends', component: FriendsComponent},
   {path: 'messages', component: MessagesComponent},
   {path: 'friend-requests', component: RequestsComponent},
+  {path: 'not-found', component: NotFoundComponent},
   {path: 'discover', component: DiscoverComponent},
   {path: ':username', component: UserProfileComponent},
   {path: '**', redirectTo: 'home'}

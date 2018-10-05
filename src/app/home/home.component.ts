@@ -15,6 +15,7 @@ export class HomeComponent implements OnInit {
   userInfo: UserInfo = {name: '', info: '', place: '', birthday: '', image: ''};
   dataSuccess = 0;
   posts: Post[];
+  myId: number;
 
   constructor(private getInfoService: GetInfoService, private refreshTokenService: RefreshTokenService) { }
 
@@ -45,8 +46,11 @@ export class HomeComponent implements OnInit {
       .subscribe((data: any) => {
         if (data.success === 1) {
           this.posts = data.data;
+          this.myId = data.myid;
           this.posts.sort(function compare(a, b) {
-            return this.getTime(a.post_date) - this.getTime(b.post_date);
+            const date1 = a.post_date != null ? new Date(a.post_date).getTime() : 0;
+            const date2 = b.post_date != null ? new Date(b.post_date).getTime() : 0;
+            return date2 - date1;
           });
         }
       }, (error) => {
@@ -64,16 +68,15 @@ export class HomeComponent implements OnInit {
 
   }
 
-  private static getTime(date?: Date) {
-    return date != null ? date.getTime() : 0;
-  }
-
   makePost(form: NgForm) {
     const accessToken = localStorage.getItem('accessToken');
     const username = localStorage.getItem('username');
     const now = new Date().toISOString().split('.')[0];
     const publ = form.value.public ? 1 : 0;
-    this.getInfoService.savePost({username: username, post: form.value.post, post_date: now, liked: 0, public: publ}, accessToken)
+    if (form.value.post.length() === 0) {
+      return;
+    }
+    this.getInfoService.savePost({username: username, post: form.value.post, post_date: now, public: publ}, accessToken)
       .subscribe((data: {msg: string, success: number}) => {
         if (data.success === 1) {
           form.reset();

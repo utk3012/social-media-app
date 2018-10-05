@@ -8,6 +8,7 @@ import { Post } from '../../models/Post.model';
 })
 export class PostsComponent implements OnInit {
   @Input() posts: Post[];
+  @Input() myId: number;
 
   constructor() { }
 

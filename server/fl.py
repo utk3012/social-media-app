@@ -50,4 +50,5 @@ def on_leave(data):
     leave_room(data)
 
 if __name__ == '__main__':
+    print('Chat server now running on localhost:4000')
     socketio.run(app, host='localhost', port=4000)

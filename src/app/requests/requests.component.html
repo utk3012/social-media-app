@@ -8,6 +8,7 @@
     </div>
     <div class="w3-col m8">
       <h3>Friend Requests</h3>
+      <h4 *ngIf="users.length === 0">No requests</h4>
       <ul class="w3-ul w3-card-4">
         <li class="w3-bar" (click)="viewUser(user.username)" *ngFor="let user of users">
           <!--<span class="w3-bar-item w3-button w3-xlarge w3-right">-->

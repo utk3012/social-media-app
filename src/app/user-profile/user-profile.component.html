@@ -68,7 +68,7 @@
           <h3 *ngIf="posts.length === 0">No Posts to display :(</h3>
         </div>
         <span *ngIf="posts">
-          <app-posts [posts]="posts"></app-posts>
+          <app-posts [posts]="posts" [myId]="myId"></app-posts>
         </span>
         <!--End Middle Column  -->
       </div>

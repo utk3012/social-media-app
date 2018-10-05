@@ -1,19 +1,48 @@
 <app-navbar></app-navbar>
-<div class="container">
+<div class="container" *ngIf="myId">
 <div class="w3-col m4 listBox">
-  <div class="friend-item w3-row" *ngFor="let user of users" (click)="selectFriend(user.id)">
+  <h3 *ngIf="users.length === 0" class="w3-center">No friends</h3>
+  <div class="friend-item w3-row" *ngFor="let user of users"
+       (click)="selectFriend(user.id)"
+       [ngStyle]="{'background-color': selectedFriend === user.id ? 'lightblue' : 'white'}">
     <div class="w3-col m3">
       <img [src]="user.image" alt="user-img" width="50" height="50">
     </div>
-    <div class="w3-col m12">
+    <!-------------------------------------------------------------------------------->
+    <div class="w3-col m12" *ngIf="lastMessages[user.id]">
+      <div class="w3-row">
+        <div class="w3-col m10">
       <strong>{{ user.name }}</strong>
-      <div class="w3-right" style="padding-right: 1vw">14:00</div>
-      <br>
-      this is a message
-      <div class="float-xs-right" style="padding-right: 1vw">
-        <span class="badge badge-5">seen</span>
+        </div>
+      <div class="w3-col m2 w3-right" style="padding-right: 1vw">{{ lastMessages[user.id].dts }}</div>
+      </div>
+      <div class="w3-row">
+      <div class="w3-col m10">
+        {{ lastMessages[user.id].msg }}
+      </div>
+      <div class="w3-col m2 w3-right" style="padding-right: 1vw">
+        <!--<span style="color: blue">{{ lastMessages[user.id].seen === 't' ? 'Seen' : '' }}</span>-->
+      </div>
       </div>
     </div>
+    <!-------------------------------------------------------------------------------->
+    <div class="w3-col m12" *ngIf="!lastMessages[user.id]">
+      <div class="w3-row">
+        <div class="w3-col m10">
+          <strong>{{ user.name }}</strong>
+        </div>
+        <div class="w3-col m2 w3-right" style="padding-right: 1vw">&nbsp;</div>
+      </div>
+      <div class="w3-row">
+        <div class="w3-col m10">
+          &nbsp;
+        </div>
+        <div class="w3-col m2 w3-right" style="padding-right: 1vw">
+          <span class="">&nbsp;</span>
+        </div>
+      </div>
+    </div>
+    <!------------------------------------------------------------------------------->
   </div>
 </div>
 <div class="w3-col m8 messageBox" #scrollMe>
