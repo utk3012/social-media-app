@@ -85,9 +85,7 @@ CREATE TRIGGER requestAccepted
 AFTER INSERT ON friends
 FOR EACH ROW
 BEGIN
-IF INSERTING THEN
 	UPDATE requests SET accepted = 1 WHERE requests.user1 = NEW.user1 and requests.user2 = NEW.user2;
-END IF;
 END$$
 
 
