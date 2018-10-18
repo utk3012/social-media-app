@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { GetInfoService } from '../services/get-info.service';
-import { RefreshTokenService } from '../services/refresh-token.service';
 
 @Component({
   selector: 'app-discover',
@@ -13,8 +12,7 @@ export class DiscoverComponent implements OnInit {
   showMess = false;
   username: string;
 
-  constructor(private getInfoService: GetInfoService, private refreshTokenService: RefreshTokenService,
-              private router: Router) { }
+  constructor(private getInfoService: GetInfoService, private router: Router) { }
 
   ngOnInit() {
     const accessToken = localStorage.getItem('accessToken');
@@ -28,16 +26,7 @@ export class DiscoverComponent implements OnInit {
         }
         this.showMess = true;
       }, (error) => {
-        if (error.status === 422 || error.error.msg === 'Token has expired') {
-          const refreshToken = localStorage.getItem('refreshToken');
-          this.refreshTokenService.getAccessToken(refreshToken)
-            .subscribe((data: { accessToken: string }) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-                this.ngOnInit();
-              }
-            });
-        }
+        console.log(error);
       });
   }
 

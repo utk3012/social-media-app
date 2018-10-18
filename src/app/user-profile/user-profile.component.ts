@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { GetInfoService } from '../services/get-info.service';
-import { RefreshTokenService } from '../services/refresh-token.service';
 import { UserInfo } from '../models/UserInfo-Model';
 import { Post } from '../models/Post.model';
 
@@ -21,7 +20,7 @@ export class UserProfileComponent implements OnInit {
   myId: number;
 
   constructor(private activatedRoute: ActivatedRoute, private getInfoService: GetInfoService,
-              private refreshTokenService: RefreshTokenService, private router: Router) { }
+              private router: Router) { }
 
   ngOnInit() {
     const fromUsername = localStorage.getItem('username');
@@ -41,16 +40,7 @@ export class UserProfileComponent implements OnInit {
               this.router.navigate(['/not-found']);
             }
           }, (error) => {
-            if (error.status === 422 || error.error.msg === 'Token has expired') {
-              const refreshToken = localStorage.getItem('refreshToken');
-              this.refreshTokenService.getAccessToken(refreshToken)
-                .subscribe((data: {accessToken: string}) => {
-                  if (data.accessToken) {
-                    localStorage.setItem('accessToken', data.accessToken);
-                    this.ngOnInit();
-                  }
-                });
-            }
+            console.log(error);
           });
 
         this.getInfoService.getPosts({forUsername: this.forUsername, fromUsername: fromUsername}, accessToken)
@@ -62,16 +52,7 @@ export class UserProfileComponent implements OnInit {
               this.relationStatus = data.status;
             }
           }, (error) => {
-            if (error.status === 422 || error.error.msg === 'Token has expired') {
-              const refreshToken = localStorage.getItem('refreshToken');
-              this.refreshTokenService.getAccessToken(refreshToken)
-                .subscribe((data: { accessToken: string }) => {
-                  if (data.accessToken) {
-                    localStorage.setItem('accessToken', data.accessToken);
-                    this.ngOnInit();
-                  }
-                });
-            }
+            console.log(error);
           });
       });
   }
@@ -85,16 +66,7 @@ export class UserProfileComponent implements OnInit {
           this.relationStatus = 1;
         }
       }, (error) => {
-        if (error.status === 422 || error.error.msg === 'Token has expired') {
-          const refreshToken = localStorage.getItem('refreshToken');
-          this.refreshTokenService.getAccessToken(refreshToken)
-            .subscribe((data: { accessToken: string }) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-                this.ngOnInit();
-              }
-            });
-        }
+        console.log(error);
       });
   }
 
@@ -107,16 +79,7 @@ export class UserProfileComponent implements OnInit {
           this.friendProfile = true;
         }
       }, (error) => {
-        if (error.status === 422 || error.error.msg === 'Token has expired') {
-          const refreshToken = localStorage.getItem('refreshToken');
-          this.refreshTokenService.getAccessToken(refreshToken)
-            .subscribe((data: { accessToken: string }) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-                this.ngOnInit();
-              }
-            });
-        }
+        console.log(error);
       });
   }
 }

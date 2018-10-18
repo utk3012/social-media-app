@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { GetInfoService } from '../services/get-info.service';
-import { RefreshTokenService } from '../services/refresh-token.service';
 import { UserInfo } from '../models/UserInfo-Model';
 import { Post } from '../models/Post.model';
 
@@ -17,7 +16,7 @@ export class HomeComponent implements OnInit {
   posts: Post[];
   myId: number;
 
-  constructor(private getInfoService: GetInfoService, private refreshTokenService: RefreshTokenService) { }
+  constructor(private getInfoService: GetInfoService) { }
 
   ngOnInit() {
     const accessToken = localStorage.getItem('accessToken');
@@ -30,16 +29,7 @@ export class HomeComponent implements OnInit {
           this.dataSuccess = 1;
         }
       }, (error) => {
-        if (error.status === 422 || error.error.msg === 'Token has expired') {
-          const refreshToken = localStorage.getItem('refreshToken');
-          this.refreshTokenService.getAccessToken(refreshToken)
-            .subscribe((data: {accessToken: string}) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-                this.ngOnInit();
-              }
-          });
-        }
+        console.log(error);
       });
 
     this.getInfoService.getFriendPosts({username: username}, accessToken)
@@ -54,16 +44,7 @@ export class HomeComponent implements OnInit {
           });
         }
       }, (error) => {
-        if (error.status === 422 || error.error.msg === 'Token has expired') {
-          const refreshToken = localStorage.getItem('refreshToken');
-          this.refreshTokenService.getAccessToken(refreshToken)
-            .subscribe((data: {accessToken: string}) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-                this.ngOnInit();
-              }
-            });
-        }
+        console.log(error);
       });
 
   }
@@ -82,16 +63,7 @@ export class HomeComponent implements OnInit {
           form.reset();
         }
       }, (error) => {
-        if (error.status === 422 || error.error.msg === 'Token has expired') {
-          const refreshToken = localStorage.getItem('refreshToken');
-          this.refreshTokenService.getAccessToken(refreshToken)
-            .subscribe((data: {accessToken: string}) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-                this.ngOnInit();
-              }
-            });
-        }
+        console.log(error);
       });
   }
 

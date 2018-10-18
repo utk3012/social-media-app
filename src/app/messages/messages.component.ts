@@ -1,9 +1,8 @@
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import * as io from "socket.io-client";
 
-import {GetInfoService} from '../services/get-info.service';
-import {RefreshTokenService} from '../services/refresh-token.service';
-import {NgForm} from '@angular/forms';
+import { GetInfoService } from '../services/get-info.service';
+import { NgForm } from '@angular/forms';
 
 interface Dictionary {
   [index: string]: {msg: string, dts: string, seen: string};
@@ -25,7 +24,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   messages: {msg: string, s_id: string, r_id: string, seen?: string, dts: string}[] = [];
   lastMessages = {} as Dictionary;
 
-  constructor(private getInfoService: GetInfoService, private refreshTokenService: RefreshTokenService) { }
+  constructor(private getInfoService: GetInfoService) { }
 
   ngOnInit() {
     const accessToken = localStorage.getItem('accessToken');
@@ -47,32 +46,14 @@ export class MessagesComponent implements OnInit, OnDestroy {
                 // this.checkUnseen();
               },
               error => {
-                if (error.status === 422 || error.error.msg === 'Token has expired') {
-                  const refreshToken = localStorage.getItem('refreshToken');
-                  this.refreshTokenService.getAccessToken(refreshToken)
-                    .subscribe((data: { accessToken: string }) => {
-                      if (data.accessToken) {
-                        localStorage.setItem('accessToken', data.accessToken);
-                        this.ngOnInit();
-                      }
-                    });
-                }
+                console.log(error);
           });
         } else {
           this.users = []
         }
         this.showMess = true;
       }, (error) => {
-        if (error.status === 422 || error.error.msg === 'Token has expired') {
-          const refreshToken = localStorage.getItem('refreshToken');
-          this.refreshTokenService.getAccessToken(refreshToken)
-            .subscribe((data: { accessToken: string }) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-                this.ngOnInit();
-              }
-            });
-        }
+        console.log(error);
       });
   }
 

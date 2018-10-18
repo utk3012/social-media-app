@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Post } from '../../../models/Post.model';
 import { GetInfoService } from '../../../services/get-info.service';
-import { RefreshTokenService } from '../../../services/refresh-token.service';
 
 @Component({
   selector: 'app-post',
@@ -12,7 +11,7 @@ export class PostComponent implements OnInit {
   @Input() post: Post;
   @Input() myId: number;
 
-  constructor(private getInfoService: GetInfoService, private refreshTokenService: RefreshTokenService) { }
+  constructor(private getInfoService: GetInfoService) { }
 
   ngOnInit() {
   }
@@ -32,16 +31,7 @@ export class PostComponent implements OnInit {
           }
         }
       }, (error) => {
-        if (error.status === 422 || error.error.msg === 'Token has expired') {
-          const refreshToken = localStorage.getItem('refreshToken');
-          this.refreshTokenService.getAccessToken(refreshToken)
-            .subscribe((data: {accessToken: string}) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-                this.ngOnInit();
-              }
-            });
-        }
+        console.log(error);
       });
   }
 

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import {GetInfoService} from '../services/get-info.service';
-import {Router} from '@angular/router';
-import {RefreshTokenService} from '../services/refresh-token.service';
+import { GetInfoService } from '../services/get-info.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-requests',
@@ -13,8 +12,7 @@ export class RequestsComponent implements OnInit {
   showMess = false;
   username: string;
 
-  constructor(private getInfoService: GetInfoService, private refreshTokenService: RefreshTokenService,
-              private router: Router) { }
+  constructor(private getInfoService: GetInfoService, private router: Router) { }
 
   ngOnInit() {
     const accessToken = localStorage.getItem('accessToken');
@@ -28,16 +26,7 @@ export class RequestsComponent implements OnInit {
         }
         this.showMess = true;
       }, (error) => {
-        if (error.status === 422 || error.error.msg === 'Token has expired') {
-          const refreshToken = localStorage.getItem('refreshToken');
-          this.refreshTokenService.getAccessToken(refreshToken)
-            .subscribe((data: { accessToken: string }) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-                this.ngOnInit();
-              }
-            });
-        }
+        console.log(error);
       });
   }
 
@@ -54,16 +43,7 @@ export class RequestsComponent implements OnInit {
           this.viewUser(forUsername);
         }
       }, (error) => {
-        if (error.status === 422 || error.error.msg === 'Token has expired') {
-          const refreshToken = localStorage.getItem('refreshToken');
-          this.refreshTokenService.getAccessToken(refreshToken)
-            .subscribe((data: { accessToken: string }) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-                this.ngOnInit();
-              }
-            });
-        }
+        console.log(error);
       });
   }
 }
