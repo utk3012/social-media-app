@@ -3,6 +3,7 @@ import * as io from "socket.io-client";
 
 import { GetInfoService } from '../services/get-info.service';
 import { NgForm } from '@angular/forms';
+import { RefreshTokenService } from '../services/refresh-token.service';
 
 interface Dictionary {
   [index: string]: {msg: string, dts: string, seen: string};
@@ -24,7 +25,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   messages: {msg: string, s_id: string, r_id: string, seen?: string, dts: string}[] = [];
   lastMessages = {} as Dictionary;
 
-  constructor(private getInfoService: GetInfoService) { }
+  constructor(private getInfoService: GetInfoService, private refreshTokenService: RefreshTokenService) { }
 
   ngOnInit() {
     const accessToken = localStorage.getItem('accessToken');
@@ -46,14 +47,34 @@ export class MessagesComponent implements OnInit, OnDestroy {
                 // this.checkUnseen();
               },
               error => {
-                console.log(error);
+                if (error.status === 422 || error.error.msg === 'Token has expired') {
+                  const refreshToken = localStorage.getItem('refreshToken');
+                  console.log('Token expired.');
+                  this.refreshTokenService.getAccessToken(refreshToken)
+                    .subscribe((data: {accessToken: string}) => {
+                      if (data.accessToken) {
+                        localStorage.setItem('accessToken', data.accessToken);
+                        this.ngOnInit();
+                      }
+                    });
+                }
           });
         } else {
           this.users = []
         }
         this.showMess = true;
       }, (error) => {
-        console.log(error);
+        if (error.status === 422 || error.error.msg === 'Token has expired') {
+          const refreshToken = localStorage.getItem('refreshToken');
+          console.log('Token expired.');
+          this.refreshTokenService.getAccessToken(refreshToken)
+            .subscribe((data: {accessToken: string}) => {
+              if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+                this.ngOnInit();
+              }
+            });
+        }
       });
   }
 

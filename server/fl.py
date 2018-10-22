@@ -20,7 +20,7 @@ users = list()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index1.html')
 
 @socketio.on('join')
 def on_join(data):

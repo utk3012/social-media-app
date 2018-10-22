@@ -70,13 +70,23 @@ create TABLE liked (
 	FOREIGN KEY (user_id) references users(id)		
 );
 
+create TABLE notifications (
+	not_id int NOT NULL AUTO_INCREMENT,
+	user_id int,
+	notification varchar(300),
+	time_stamp datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (not_id),
+	FOREIGN KEY (user_id) references users(id)		
+);
+
 DELIMITER $$
-CREATE PROCEDURE likePost (IN postId int, IN userId int)
+CREATE PROCEDURE likePost (IN postId int, IN userId int, IN name varchar(255))
 	BEGIN
 		IF (SELECT exists (SELECT 1 FROM liked where post_id = postId and user_id = userId)) THEN
 			DELETE FROM liked where post_id = postId and userId = userId;
 		ELSE
 			INSERT into liked(post_id, user_id) values (postId, userId);
+			INSERT into notifications(user_id, notification) values ((SELECT poster_id from posts where post_id = postId), name);
 		END IF;
 	END$$
 
@@ -87,6 +97,3 @@ FOR EACH ROW
 BEGIN
 	UPDATE requests SET accepted = 1 WHERE requests.user1 = NEW.user1 and requests.user2 = NEW.user2;
 END$$
-
-
-

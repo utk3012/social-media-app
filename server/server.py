@@ -1,5 +1,5 @@
 #!flask/bin/python
-from flask import Flask, jsonify, abort, request
+from flask import Flask, jsonify, abort, request, render_template
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
 from flask_mysqldb import MySQL
@@ -61,6 +61,14 @@ def approach(fromUsername, forUsername):
 		return 2
 	mysql.connection.commit()
 	return 0
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
+@app.route('/<path:any>', methods=['GET'])
+def fallback(any):
+    return render_template('index.html')
 
 @app.route('/api/refresh', methods=['POST'])
 @jwt_refresh_token_required
@@ -297,11 +305,16 @@ def acceptRequest():
 	if not request.json['fromUsername'] == get_jwt_identity():
 		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
 	cur = mysql.connection.cursor()
-	# write trigger to update requests accepted attribute
 	fr = check_friends(request.json['forUsername'], request.json['fromUsername'])
 	if fr:
 		return (jsonify({"msg": "Already friends", "success": 0}), 200)
 	query = "INSERT into friends (user1, user2) values ('%s', '%s')" % (getUserId(request.json['forUsername']), getUserId(request.json['fromUsername']))
+	cur.execute(query)
+	query = "SELECT name from info where id = '%s'" % (getUserId(request.json['fromUsername']))
+	cur.execute(query)
+	rv = cur.fetchall()
+	noti = str(rv[0][0]) + ' has accepted your friend request.'
+	query = "INSERT into notifications (user_id, notification) values ('%s', '%s')" % (getUserId(request.json['forUsername']), noti)
 	cur.execute(query)
 	mysql.connection.commit()
 	return jsonify({"success": 1, "msg": "Request accepted"}), 200
@@ -337,11 +350,34 @@ def likePost():
 		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
 	myid = getUserId(request.json['username'])
 	cur = mysql.connection.cursor()
-	query = """CALL likePost('%s', '%s')""" % (request.json['post_id'], myid)
+	query = 'SELECT name from info where id = %s' % (myid)
+	cur.execute(query)
+	rv = cur.fetchall()
+	name = str(rv[0][0]) + ' has liked your post.'
+	query = """CALL likePost('%s', '%s', '%s')""" % (request.json['post_id'], myid, name)
 	cur.execute(query)
 	mysql.connection.commit()
 	return jsonify({"success": 1}), 200	
 
+@app.route('/api/get_notifications', methods=['POST'])
+@jwt_required
+def getNotifications():
+	if not request.json or not 'username' in request.json:
+		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
+	if not request.json['username'] == get_jwt_identity():
+		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	cur = mysql.connection.cursor()
+	query = "SELECT notification, time_stamp from notifications where user_id = '%s'" % (getUserId(request.json['username']))
+	cur.execute(query)
+	row_headers=[x[0] for x in cur.description] #this will extract row headers
+	rv = cur.fetchall()
+	if not rv:
+		return jsonify({"success": 0, "data": []}), 200		
+	res = []
+	for result in rv:
+		res.append(dict(zip(row_headers,result)))
+	mysql.connection.commit()
+	return jsonify({"success": 1, "data": res}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

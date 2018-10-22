@@ -4,6 +4,7 @@ import { NgForm } from '@angular/forms';
 import { GetInfoService } from '../services/get-info.service';
 import { UserInfo } from '../models/UserInfo-Model';
 import { Post } from '../models/Post.model';
+import { RefreshTokenService } from '../services/refresh-token.service';
 
 @Component({
   selector: 'app-home',
@@ -16,7 +17,7 @@ export class HomeComponent implements OnInit {
   posts: Post[];
   myId: number;
 
-  constructor(private getInfoService: GetInfoService) { }
+  constructor(private getInfoService: GetInfoService, private refreshTokenService: RefreshTokenService) { }
 
   ngOnInit() {
     const accessToken = localStorage.getItem('accessToken');
@@ -29,7 +30,17 @@ export class HomeComponent implements OnInit {
           this.dataSuccess = 1;
         }
       }, (error) => {
-        console.log(error);
+        if (error.status === 422 || error.error.msg === 'Token has expired') {
+          const refreshToken = localStorage.getItem('refreshToken');
+          console.log('Token expired.');
+          this.refreshTokenService.getAccessToken(refreshToken)
+            .subscribe((data: {accessToken: string}) => {
+              if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+                this.ngOnInit();
+              }
+            });
+        }
       });
 
     this.getInfoService.getFriendPosts({username: username}, accessToken)
@@ -44,7 +55,17 @@ export class HomeComponent implements OnInit {
           });
         }
       }, (error) => {
-        console.log(error);
+        if (error.status === 422 || error.error.msg === 'Token has expired') {
+          const refreshToken = localStorage.getItem('refreshToken');
+          console.log('Token expired.');
+          this.refreshTokenService.getAccessToken(refreshToken)
+            .subscribe((data: {accessToken: string}) => {
+              if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+                this.ngOnInit();
+              }
+            });
+        }
       });
 
   }
@@ -54,7 +75,7 @@ export class HomeComponent implements OnInit {
     const username = localStorage.getItem('username');
     const now = new Date().toISOString().split('.')[0];
     const publ = form.value.public ? 1 : 0;
-    if (form.value.post.length() === 0) {
+    if (form.value.post.length === 0) {
       return;
     }
     this.getInfoService.savePost({username: username, post: form.value.post, post_date: now, public: publ}, accessToken)
@@ -63,7 +84,17 @@ export class HomeComponent implements OnInit {
           form.reset();
         }
       }, (error) => {
-        console.log(error);
+        if (error.status === 422 || error.error.msg === 'Token has expired') {
+          const refreshToken = localStorage.getItem('refreshToken');
+          console.log('Token expired.');
+          this.refreshTokenService.getAccessToken(refreshToken)
+            .subscribe((data: {accessToken: string}) => {
+              if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+                this.ngOnInit();
+              }
+            });
+        }
       });
   }
 
