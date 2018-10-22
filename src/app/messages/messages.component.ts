@@ -21,7 +21,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   users: any[];
   showMess = false;
   myId: number;
-  socket = io('http://localhost:4000');
+  socket = io('http://139.59.93.102/messageapi');
   messages: {msg: string, s_id: string, r_id: string, seen?: string, dts: string}[] = [];
   lastMessages = {} as Dictionary;
 

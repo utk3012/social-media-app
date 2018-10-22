@@ -9,7 +9,7 @@ import { RefreshTokenService } from './refresh-token.service';
   providedIn: 'root'
 })
 export class GetInfoService {
-  baseUrl = 'http://localhost:5000/api/';
+  baseUrl = 'http://139.59.93.102/api/';
 
   constructor(private http: HttpClient, private refreshTokenService: RefreshTokenService) { }
 
