@@ -22,7 +22,7 @@ def get_hashed_password(plain_text_password):
 	return bcrypt.hashpw(plain_text_password, bcrypt.gensalt())
 
 def verify_password(plain_text_password, hashed_password):
-	return bcrypt.checkpw(plain_text_password, hashed_password)
+	return bcrypt.checkpw(plain_text_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 def getUserId(username):
 	cur = mysql.connection.cursor()
@@ -83,7 +83,7 @@ def register():
     or not 'birthday' in request.json or not 'info' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
 	cur = mysql.connection.cursor()
-	hashPass = get_hashed_password(request.json['password'])
+	hashPass = get_hashed_password(request.json['password'].encode('utf-8'))
 	query = 'INSERT into users (email, password, username) values("%s", "%s", "%s")' % (request.json['email'], hashPass, request.json['username'])
 	cur.execute(query)
 	query = 'INSERT INTO info (id, name, place, info, birthday, image) VALUES(LAST_INSERT_ID(), "%s", "%s", "%s", "%s", "https://www.w3schools.com/w3images/avatar2.png")' \
@@ -130,8 +130,8 @@ def getInfo():
 def discover():
 	if not request.json or not 'username' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['username'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['username'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	cur = mysql.connection.cursor()
 	query = 'SELECT name, info, image, username from info natural join users where username <> "%s"' % (request.json['username'])
 	cur.execute(query)
@@ -150,8 +150,8 @@ def discover():
 def friends():
 	if not request.json or not 'username' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['username'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['username'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	cur = mysql.connection.cursor()
 	query = """SELECT user2 as fr from friends T, users R where R.username = "%s" and T.user1 = R.id union 
 	select user1 as fr from friends T, users R where R.username = "%s" and T.user2=R.id""" % (request.json['username'], request.json['username'])
@@ -167,7 +167,7 @@ def friends():
 		row_headers=[x[0] for x in cur.description] #this will extract row headers
 		res.append(dict(zip(row_headers,rv1[0])))
 	mysql.connection.commit()
-	return jsonify({"success": 1, "data": res}), 200
+	return jsonify({"success": 1, "data": res, "myid": getUserId(request.json['username'])}), 200
 
 @app.route('/api/make_post', methods=['POST'])
 @jwt_required
@@ -175,8 +175,8 @@ def makePost():
 	if not request.json or not 'username' in request.json or not 'post' in request.json or not 'post_date' in request.json \
 	or not 'public' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['username'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['username'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	cur = mysql.connection.cursor()
 	query = 'INSERT into posts(poster_id, post, post_date, public) SELECT id, "%s", "%s", "%s" from users where username = "%s"' \
 	% (request.json['post'], request.json['post_date'], request.json['public'], request.json['username'])
@@ -189,8 +189,8 @@ def makePost():
 def getPosts():
 	if not request.json or not 'forUsername' in request.json or not 'fromUsername' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['fromUsername'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['fromUsername'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	myid = getUserId(request.json['fromUsername'])
 	cur = mysql.connection.cursor()
 	query = """SELECT post_id, poster_id, name, post_date, public, post, image from posts, info 
@@ -229,8 +229,8 @@ def getPosts():
 def getFriendPosts():
 	if not request.json or not 'username' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['username'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['username'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	myid = getUserId(request.json['username'])
 	cur = mysql.connection.cursor()
 	query = """SELECT user2 as fr from friends T, users R where R.username = "%s" and T.user1 = R.id union 
@@ -265,8 +265,8 @@ def getFriendPosts():
 def sendRequest():
 	if not request.json or not 'forUsername' in request.json or not 'fromUsername' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['fromUsername'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['fromUsername'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	fr = check_friends(request.json['forUsername'], request.json['fromUsername'])
 	if fr:
 		return (jsonify({"msg": "Already friends", "success": 0}), 200)
@@ -281,8 +281,8 @@ def sendRequest():
 def getRequests():
 	if not request.json or not 'username' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['username'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['username'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	cur = mysql.connection.cursor()
 	query = "SELECT S.name, S.info, S.image, T.username from requests R, info S, users T where R.user2 = '%s' and S.id = R.user1 and T.id = S.id and accepted = 0" \
 	% (getUserId(request.json['username']))
@@ -302,8 +302,8 @@ def getRequests():
 def acceptRequest():
 	if not request.json or not 'forUsername' in request.json or not 'fromUsername' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['fromUsername'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['fromUsername'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	cur = mysql.connection.cursor()
 	fr = check_friends(request.json['forUsername'], request.json['fromUsername'])
 	if fr:
@@ -324,8 +324,8 @@ def acceptRequest():
 def getMessages():
 	if not request.json or not 'username' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['username'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['username'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	cur = mysql.connection.cursor()
 	myid = getUserId(request.json['username'])
 	query = 'SELECT s_id, r_id, msg, dts, seen from messages where (s_id="%s" or r_id="%s") and dts>"%s"' \
@@ -346,8 +346,8 @@ def getMessages():
 def likePost():
 	if not request.json or not 'post_id' in request.json or not 'username':
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['username'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['username'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	myid = getUserId(request.json['username'])
 	cur = mysql.connection.cursor()
 	query = 'SELECT name from info where id = %s' % (myid)
@@ -364,8 +364,8 @@ def likePost():
 def getNotifications():
 	if not request.json or not 'username' in request.json:
 		return (jsonify({"msg": "invalid request or missing parameters in request", "success": 0}), 400)
-	if not request.json['username'] == get_jwt_identity():
-		return (jsonify({"msg": "Invalid request", "success": 0}), 200)
+	if request.json['username'] != get_jwt_identity():
+		return jsonify({"msg": "unauthorized access"}), 401
 	cur = mysql.connection.cursor()
 	query = "SELECT notification, time_stamp from notifications where user_id = '%s'" % (getUserId(request.json['username']))
 	cur.execute(query)

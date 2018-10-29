@@ -1,17 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError } from 'rxjs/internal/operators';
-import { of } from 'rxjs/index';
-
-import { RefreshTokenService } from './refresh-token.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GetInfoService {
-  baseUrl = 'http://139.59.93.102/api/';
+  baseUrl = 'http://localhost:5000/api/';
 
-  constructor(private http: HttpClient, private refreshTokenService: RefreshTokenService) { }
+  constructor(private http: HttpClient) { }
 
   public getInfo(data: {username: string}, accessToken: string) {
     let headers = new HttpHeaders().set('Content-Type', 'application/json').set('Authorization', 'Bearer ' + accessToken);

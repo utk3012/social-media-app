@@ -19,19 +19,20 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { DiscoverComponent } from './discover/discover.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
 import { MessagePipe } from './pipes/message.pipe';
+import { AuthGuardService as AuthGuard } from './guards/auth-guard.service';
 
 const appRoutes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full'},
+  {path: '', redirectTo: 'home', pathMatch: 'full'},
   {path: 'login', component: LoginComponent},
   {path: 'register', component: RegisterComponent},
-  {path: 'home', component: HomeComponent},
-  {path: 'notifications', component: NotificationsComponent},
-  {path: 'friends', component: FriendsComponent},
-  {path: 'messages', component: MessagesComponent},
-  {path: 'friend-requests', component: RequestsComponent},
-  {path: 'not-found', component: NotFoundComponent},
-  {path: 'discover', component: DiscoverComponent},
-  {path: ':username', component: UserProfileComponent},
+  {path: 'home', component: HomeComponent, canActivate: [AuthGuard]},
+  {path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard]},
+  {path: 'friends', component: FriendsComponent, canActivate: [AuthGuard]},
+  {path: 'messages', component: MessagesComponent, canActivate: [AuthGuard]},
+  {path: 'friend-requests', component: RequestsComponent, canActivate: [AuthGuard]},
+  {path: 'not-found', component: NotFoundComponent, canActivate: [AuthGuard]},
+  {path: 'discover', component: DiscoverComponent, canActivate: [AuthGuard]},
+  {path: ':username', component: UserProfileComponent, canActivate: [AuthGuard]},
   {path: '**', redirectTo: 'home'}
 ];
 

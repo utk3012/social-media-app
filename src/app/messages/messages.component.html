@@ -45,7 +45,7 @@
     <!------------------------------------------------------------------------------->
   </div>
 </div>
-<div class="w3-col m8 messageBox" #scrollMe>
+<div class="w3-col m8 messageBox" style="overflow-y: scroll;" #scrollMe [scrollTop]="scrollMe.scrollHeight">
   <div class="w3-row">
     <div class="w3-col m12">
       <div *ngIf="selectedFriend !== -1">

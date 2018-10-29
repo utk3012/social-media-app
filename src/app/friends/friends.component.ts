@@ -19,7 +19,7 @@ export class FriendsComponent implements OnInit {
     const accessToken = localStorage.getItem('accessToken');
     this.username = localStorage.getItem('username');
     this.getInfoService.getFriends({username: this.username}, accessToken)
-      .subscribe((dat: {success: number, data: any}) => {
+      .subscribe((dat: {success: number, data: any, myid: number}) => {
         if (dat.success === 1) {
           this.users = dat.data;
         } else {
